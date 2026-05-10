@@ -1,22 +1,20 @@
-import { useQuery } from "@tanstack/react-query"
-import { getWeatherData } from "./api"
-import Card from "./components/cards/Card"
+import Map from "./components/Map";
+import AdditionalInfo from "./components/cards/AdditionalInfo";
+import CurrentWeather from "./components/cards/CurrentWeather";
+import DailyForecast from "./components/cards/DailyForecast";
+import HourlyForecast from "./components/cards/HourlyForecast";
 
 function App() {
-
-  const { data } = useQuery({
-    queryKey: ['weather'],
-    queryFn: () => getWeatherData({ lat: 28.4, lon: 77 })
-  })
   return (
     <>
-      <button className="">Get data</button>
       <div className="flex flex-col gap-8">
-        <Card title="Current Weather">{JSON.stringify(data?.current)}</Card>
-        <Card title="Hourly Weather">{JSON.stringify(data?.hourly)}</Card>
-        <Card title="Daily Weather">{JSON.stringify(data?.daily)}</Card>
+        <Map />
+        <CurrentWeather />
+        <HourlyForecast />
+        <DailyForecast />
+        <AdditionalInfo />
       </div>
     </>
-  )
+  );
 }
-export default App
+export default App;
