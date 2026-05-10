@@ -1,4 +1,5 @@
-import { type ReactNode, useEffect, useState } from "react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { type ReactNode, useCallback, useEffect, useState } from "react";
 import { getLocationData } from "../api";
 import type { Coords } from "../types";
 import {
@@ -11,11 +12,51 @@ import {
 const LOCATION_CACHE_KEY = "openweather_location_cache";
 
 export function CoordsProvider({ children }: { children: ReactNode }) {
-  const [coords, setCoords] = useState<Coords>(defaultCoords);
-  const [location, setLocation] = useState<LocationInfo>();
-  const [locationStatus, setLocationStatus] =
-    useState<LocationStatus>("idle");
-  const [locationError, setLocationError] = useState<string>();
+  const queryClient = useQueryClient();
+  const [coords, setCoordsState] = useState<Coords>(defaultCoords);
+  const locationCacheKey = getLocationCacheKey(coords);
+
+  const setCoords = useCallback(
+    (nextCoords: Coords, options?: { location?: LocationInfo }) => {
+      if (options?.location) {
+        const cacheKey = getLocationCacheKey(nextCoords);
+
+        cacheLocation(cacheKey, options.location);
+        queryClient.setQueryData(
+          getLocationQueryKey(cacheKey),
+          options.location,
+        );
+      }
+
+      setCoordsState(nextCoords);
+    },
+    [queryClient],
+  );
+
+  const locationQuery = useQuery({
+    queryKey: getLocationQueryKey(locationCacheKey),
+    queryFn: async ({ signal }) => {
+      const locationData = await getLocationData({
+        lat: coords.lat,
+        lon: coords.lng,
+        signal,
+      });
+
+      if (!locationData) {
+        throw new Error("Location name is not available.");
+      }
+
+      cacheLocation(locationCacheKey, locationData);
+
+      return locationData;
+    },
+    initialData: () => getCachedLocation(locationCacheKey),
+    retry: false,
+    refetchOnMount: false,
+    refetchOnWindowFocus: false,
+    refetchOnReconnect: false,
+    staleTime: Infinity,
+  });
 
   useEffect(() => {
     if (!navigator.geolocation) return;
@@ -36,73 +77,41 @@ export function CoordsProvider({ children }: { children: ReactNode }) {
         timeout: 10_000,
       },
     );
-  }, []);
+  }, [setCoords]);
 
-  useEffect(() => {
-    let isCurrent = true;
-    const cacheKey = getLocationCacheKey(coords);
-    const cachedLocation = getCachedLocation(cacheKey);
-
-    if (cachedLocation) {
-      queueMicrotask(() => {
-        if (!isCurrent) return;
-
-        setLocation(cachedLocation);
-        setLocationStatus("success");
-        setLocationError(undefined);
-      });
-      return;
-    }
-
-    queueMicrotask(() => {
-      if (!isCurrent) return;
-
-      setLocation(undefined);
-      setLocationStatus("loading");
-      setLocationError(undefined);
-    });
-
-    getLocationData({ lat: coords.lat, lon: coords.lng })
-      .then((locationData) => {
-        if (!isCurrent) return;
-
-        setLocation(locationData);
-        setLocationStatus(locationData ? "success" : "error");
-        setLocationError(
-          locationData ? undefined : "Location name is not available.",
-        );
-
-        if (locationData) {
-          cacheLocation(cacheKey, locationData);
-        }
-      })
-      .catch((error: unknown) => {
-        if (!isCurrent) return;
-
-        const message =
-          error instanceof Error
-            ? error.message
-            : "Location name is not available.";
-
-        setLocation(undefined);
-        setLocationStatus(
-          message === "QUOTA_EXCEEDED" ? "quota-exceeded" : "error",
-        );
-        setLocationError(message);
-      });
-
-    return () => {
-      isCurrent = false;
-    };
-  }, [coords]);
+  const locationError =
+    locationQuery.error instanceof Error
+      ? locationQuery.error.message
+      : undefined;
+  const locationStatus = getLocationStatus(locationQuery.status, locationError);
 
   return (
     <CoordsContext.Provider
-      value={{ coords, setCoords, location, locationStatus, locationError }}
+      value={{
+        coords,
+        setCoords,
+        location: locationQuery.data,
+        locationStatus,
+        locationError,
+      }}
     >
       {children}
     </CoordsContext.Provider>
   );
+}
+
+function getLocationQueryKey(cacheKey: string) {
+  return ["location", cacheKey] as const;
+}
+
+function getLocationStatus(
+  status: "pending" | "error" | "success",
+  error?: string,
+): LocationStatus {
+  if (status === "pending") return "loading";
+  if (status === "success") return "success";
+
+  return error === "QUOTA_EXCEEDED" ? "quota-exceeded" : "error";
 }
 
 function getLocationCacheKey(coords: Coords) {

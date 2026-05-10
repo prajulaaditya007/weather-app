@@ -7,6 +7,7 @@ import AdditionalInfo from "./components/cards/AdditionalInfo";
 import CurrentWeather from "./components/cards/CurrentWeather";
 import DailyForecast from "./components/cards/DailyForecast";
 import HourlyForecast from "./components/cards/HourlyForecast";
+import LocationDropdown from "./components/dropdowns/LocationDropdown";
 import { useCoords } from "./context/useCoords";
 
 function App() {
@@ -15,9 +16,6 @@ function App() {
 
   return (
     <div className="flex flex-col gap-8">
-      <Map />
-      <LocationErrorToast />
-
       <QueryErrorResetBoundary>
         {({ reset }) => (
           <ErrorBoundary
@@ -31,6 +29,9 @@ function App() {
             )}
           >
             <Suspense fallback={<WeatherLoading />}>
+              <LocationDropdown />
+              <Map />
+              <LocationErrorToast />
               <CurrentWeather />
               <HourlyForecast />
               <DailyForecast />
@@ -62,10 +63,13 @@ function WeatherErrorFallback({
   const isQuotaError = error.message === "QUOTA_EXCEEDED";
 
   useEffect(() => {
-    toast.error(isQuotaError ? "API quota exhausted" : "Weather data unavailable", {
-      id: `weather-error-${message}`,
-      description: message,
-    });
+    toast.error(
+      isQuotaError ? "API quota exhausted" : "Weather data unavailable",
+      {
+        id: `weather-error-${message}`,
+        description: message,
+      },
+    );
   }, [isQuotaError, message]);
 
   return (

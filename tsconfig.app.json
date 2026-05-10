@@ -6,7 +6,6 @@
     "lib": ["ES2022", "DOM"],
     "module": "esnext",
     "types": ["vite/client", "vite-plugin-svgr/client"],
-    "ignoreDeprecations": "6.0",
     "skipLibCheck": true,
 
     /* Bundler mode */
@@ -23,7 +22,6 @@
     "noFallthroughCasesInSwitch": true,
 
     // shadcn
-    "baseUrl": ".",
     "paths": {
       "@/*": ["./src/*"]
     }

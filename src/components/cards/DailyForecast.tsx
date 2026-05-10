@@ -1,20 +1,11 @@
-import { useSuspenseQuery } from "@tanstack/react-query";
-import { getWeatherData } from "../../api";
 import { useCoords } from "../../context/useCoords";
+import { useWeatherData } from "../../hooks/useWeatherData";
 import WeatherIcon from "../WeatherIcon";
 import Card from "./Card";
 
 const DailyForecast = () => {
   const { coords } = useCoords();
-  const { data, error } = useSuspenseQuery({
-    queryKey: ["weather", coords.lat, coords.lng],
-    queryFn: () => getWeatherData({ lat: coords.lat, lon: coords.lng }),
-    retry: false,
-    refetchOnMount: false,
-    refetchOnWindowFocus: false,
-    refetchOnReconnect: false,
-    staleTime: Infinity,
-  });
+  const { data, error } = useWeatherData(coords);
 
   return (
     <>

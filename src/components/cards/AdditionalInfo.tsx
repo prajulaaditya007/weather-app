@@ -1,6 +1,4 @@
-import { useSuspenseQuery } from "@tanstack/react-query";
 import type { ReactNode } from "react";
-import { getWeatherData } from "../../api";
 import {
   ArrowIcon,
   BeakerIcon,
@@ -25,9 +23,9 @@ import {
   WindIcon,
 } from "../../assets";
 import { useCoords } from "../../context/useCoords";
+import { useWeatherData, type WeatherData } from "../../hooks/useWeatherData";
 import Card from "./Card";
 
-type WeatherData = Awaited<ReturnType<typeof getWeatherData>>;
 type RowIcon = ReactNode | ((data: WeatherData) => ReactNode);
 
 type Row = {
@@ -38,15 +36,7 @@ type Row = {
 
 const AdditionalInfo = () => {
   const { coords } = useCoords();
-  const { data, error } = useSuspenseQuery({
-    queryKey: ["weather", coords.lat, coords.lng],
-    queryFn: () => getWeatherData({ lat: coords.lat, lon: coords.lng }),
-    retry: false,
-    refetchOnMount: false,
-    refetchOnWindowFocus: false,
-    refetchOnReconnect: false,
-    staleTime: Infinity,
-  });
+  const { data, error } = useWeatherData(coords);
 
   const visibleRows = rows
     .map((row) => ({

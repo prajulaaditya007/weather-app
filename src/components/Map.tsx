@@ -1,5 +1,12 @@
 import "leaflet/dist/leaflet.css";
-import { MapContainer, Marker, TileLayer, useMapEvents } from "react-leaflet";
+import { useEffect } from "react";
+import {
+  MapContainer,
+  Marker,
+  TileLayer,
+  useMap,
+  useMapEvents,
+} from "react-leaflet";
 import { useCoords } from "../context/useCoords";
 
 const Map = () => {
@@ -10,8 +17,9 @@ const Map = () => {
     <MapContainer
       center={position}
       zoom={11}
-      style={{ width: "1000px", height: "500px" }}
+      style={{ width: "95vw", height: "500px" }}
     >
+      <MapSync lat={coords.lat} lng={coords.lng} />
       <MapClick />
       <TileLayer
         attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
@@ -29,12 +37,21 @@ function MapClick() {
 
   useMapEvents({
     click(e) {
-      console.log(e);
       const { lat, lng } = e.latlng;
       setCoords({ lat, lng });
       e.target.panTo([lat, lng]);
     },
   });
+
+  return null;
+}
+
+function MapSync({ lat, lng }: { lat: number; lng: number }) {
+  const map = useMap();
+
+  useEffect(() => {
+    map.setView([lat, lng], map.getZoom());
+  }, [lat, lng, map]);
 
   return null;
 }

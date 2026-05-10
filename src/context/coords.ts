@@ -1,4 +1,4 @@
-import { createContext, type Dispatch, type SetStateAction } from "react";
+import { createContext } from "react";
 import type { Coords } from "../types";
 
 export type LocationInfo = {
@@ -9,9 +9,18 @@ export type LocationInfo = {
 
 export type LocationStatus = "idle" | "loading" | "success" | "error" | "quota-exceeded";
 
+export type SetCoordsOptions = {
+  location?: LocationInfo;
+};
+
+export type SetCoords = (
+  coords: Coords,
+  options?: SetCoordsOptions,
+) => void;
+
 export type CoordsContextValue = {
   coords: Coords;
-  setCoords: Dispatch<SetStateAction<Coords>>;
+  setCoords: SetCoords;
   location?: LocationInfo;
   locationStatus: LocationStatus;
   locationError?: string;
