@@ -9,8 +9,8 @@ const WeatherSchema = z.object({
 
 const CurrentSchema = z.object({
     dt: z.number(),
-    sunrise: z.number(),
-    sunset: z.number(),
+    sunrise: z.number().optional(),
+    sunset: z.number().optional(),
     temp: z.number(),
     feels_like: z.number(),
     pressure: z.number(),

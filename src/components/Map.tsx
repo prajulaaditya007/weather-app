@@ -29,6 +29,7 @@ function MapClick() {
 
   useMapEvents({
     click(e) {
+      console.log(e);
       const { lat, lng } = e.latlng;
       setCoords({ lat, lng });
       e.target.panTo([lat, lng]);

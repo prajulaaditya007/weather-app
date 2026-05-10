@@ -89,12 +89,12 @@ const iconClassName = "size-6 shrink-0 invert";
 const rows: Row[] = [
   {
     label: "Sunrise",
-    value: (data) => formatTime(data.current.sunrise, data.timezone),
+    value: (data) => formatOptionalTime(data.current.sunrise, data.timezone),
     icon: <SunriseIcon className={iconClassName} aria-hidden="true" />,
   },
   {
     label: "Sunset",
-    value: (data) => formatTime(data.current.sunset, data.timezone),
+    value: (data) => formatOptionalTime(data.current.sunset, data.timezone),
     icon: <SunsetIcon className={iconClassName} aria-hidden="true" />,
   },
   {
@@ -167,7 +167,7 @@ const rows: Row[] = [
     label: "Moonrise",
     value: (data) =>
       data.daily[0]
-        ? formatTime(data.daily[0].moonrise, data.timezone)
+        ? formatOptionalTime(data.daily[0].moonrise, data.timezone)
         : undefined,
     icon: <NewMoonIcon className={iconClassName} aria-hidden="true" />,
   },
@@ -175,7 +175,7 @@ const rows: Row[] = [
     label: "Moonset",
     value: (data) =>
       data.daily[0]
-        ? formatTime(data.daily[0].moonset, data.timezone)
+        ? formatOptionalTime(data.daily[0].moonset, data.timezone)
         : undefined,
     icon: <FullMoonIcon className={iconClassName} aria-hidden="true" />,
   },
@@ -237,6 +237,12 @@ function formatTime(timestamp: number, timezone: string) {
     hour12: true,
     timeZone: timezone,
   }).format(new Date(timestamp * 1000));
+}
+
+function formatOptionalTime(timestamp: number | undefined, timezone: string) {
+  if (!timestamp) return undefined;
+
+  return formatTime(timestamp, timezone);
 }
 
 function formatMoonPhase(phase: number) {

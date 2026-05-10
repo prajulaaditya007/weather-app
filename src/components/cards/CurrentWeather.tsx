@@ -5,7 +5,7 @@ import WeatherIcon from "../WeatherIcon";
 import Card from "./Card";
 
 const CurrentWeather = () => {
-  const { coords } = useCoords();
+  const { coords, location, locationError, locationStatus } = useCoords();
   const { data, error } = useSuspenseQuery({
     queryKey: ["weather", coords.lat, coords.lng],
     queryFn: () => getWeatherData({ lat: coords.lat, lon: coords.lng }),
@@ -26,6 +26,13 @@ const CurrentWeather = () => {
         childrenClassName="flex flex-col items-center gap-6"
       >
         <div className="flex flex-col gap-2 items-center">
+          <p className="font-semibold text-2xl text-center">
+            {location
+              ? [location.name, location.state, location.country]
+                  .filter(Boolean)
+                  .join(", ")
+              : getLocationStatusText(locationStatus, locationError)}
+          </p>
           <h2 className="text-6xl font-semibold text-center">
             {Math.round(data.current.temp)}°C
           </h2>
@@ -65,3 +72,11 @@ const CurrentWeather = () => {
 };
 
 export default CurrentWeather;
+
+function getLocationStatusText(status: string, error?: string) {
+  if (status === "loading") return "Finding location name...";
+  if (status === "quota-exceeded") return "Location lookup quota reached.";
+  if (status === "error") return error ?? "Location name is not available.";
+
+  return "Location name is not available.";
+}
