@@ -9,6 +9,8 @@ import {
 } from "react-leaflet";
 import { useCoords } from "../context/useCoords";
 
+// const apiKey = import.meta.env.VITE_API_KEY;
+
 const Map = () => {
   const { coords } = useCoords();
   const position = [coords.lat, coords.lng] as [number, number];
@@ -25,6 +27,9 @@ const Map = () => {
         attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
         url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
       />
+      {/* <TileLayer
+        url={`https://tile.openweathermap.org/map/{layer}/{z}/{x}/{y}.png?appid=${apiKey}`}
+      /> */}
       <Marker position={position} />
     </MapContainer>
   );
